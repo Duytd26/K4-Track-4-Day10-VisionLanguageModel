@@ -6,20 +6,20 @@
 
 **Dataset version:** `d10-21e4070301` (output kiểm tra split đã lưu trong `lab_day10.ipynb`).
 
-> **Trạng thái bằng chứng:** Các số E0 bên dưới được chép từ output chấm điểm lưu trong notebook và đã làm tròn như dòng lệnh in ra. Số E2 về huấn luyện lấy từ output 300 bước của chính notebook. Chưa có các file `report/evidence/e0.json`–`e4*.json` trong repository, nên những ô không có số được ghi **chưa có bằng chứng**. Không dùng báo cáo này để thay thế evidence do `scripts/score.py` sinh ra.
+> **Trạng thái bằng chứng:** `report/evidence/e0.json`, `e1.json`, `e2.json` là kết quả chấm thật trên cùng 311 ảnh test (`dataset_version=d10-21e4070301`). Bảng dưới đây lấy trực tiếp từ các file đó; các số thập phân được làm tròn tới 6 chữ số. E3 và hai nhánh E4 chưa có evidence nên chưa thể điền điểm. Metadata huấn luyện E1/E2 được đối chiếu với `report/training/e1_run.json` và `e2_run.json`.
 
 ## Bảng tổng hợp
 
 | Mã | Setup | Tham số huấn luyện | VRAM đỉnh (GB) | Phút | F1@IoU0.5 | CI95 | FP/ảnh | F1 pothole | F1 crack | F1 manhole |
 |---|---|---:|---:|---:|---:|---|---:|---:|---:|---:|
-| E0 | Zero-shot | 0 | Chưa ghi | Chưa ghi | 0,095 | 0,067–0,125 | 0,82 | 0,123 | 0,029 | 0,212 |
-| E1 | LoRA LLM | 33.030.144¹ | 10,362413¹ | 44,251577¹ | Chưa chấm | Chưa chấm | Chưa chấm | Chưa chấm | Chưa chấm | Chưa chấm |
-| E2 | E1 + mở projector | 142.135.296 | 8,419290² | 44,454236² | Chưa chấm | Chưa chấm | Chưa chấm | Chưa chấm | Chưa chấm | Chưa chấm |
+| E0 | Zero-shot | 0 | Không áp dụng | Không áp dụng | 0,095346 | 0,066736–0,124861 | 0,823151 | 0,123457 | 0,028986 | 0,211864 |
+| E1 | LoRA LLM | 33.030.144 | 10,362413 | 44,251577 | 0,262626 | 0,227066–0,302457 | 1,167203 | 0,172973 | 0,188737 | 0,526316 |
+| E2 | E1 + mở projector | 142.135.296 | 8,419290 | 44,454236 | 0,324910 | 0,285470–0,365672 | 1,109325 | 0,187755 | 0,246998 | 0,607143 |
 | E3 | E2 + LoRA ViT | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy |
 | E4 r=4 | Ablation `rank`, alpha=8 | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy |
 | E4 r=64 | Ablation `rank`, alpha=128 | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy |
 
-¹ Metadata E1 lấy từ `run.json` người thực hiện cung cấp: 300 bước, `peak_vram_gb=10.362412929534912`, `train_minutes=44.25157671504997`, loss cuối 0,5561. ² Metadata E2 lấy từ `run.json` người thực hiện cung cấp: 300 bước, `peak_vram_gb=8.419289588928223`, `train_minutes=44.45423585258332`, loss cuối 0,4835. Các giá trị VRAM/thời gian ở bảng được làm tròn tới 6 chữ số sau dấu phẩy như lệnh tạo evidence trong notebook; cần đối chiếu với `e1.json`/`e2.json` sau khi chấm. Các số E0 đã làm tròn, cần thay bằng giá trị từ `e0.json` trước khi nộp.
+E0 không có tham số được huấn luyện, nên hai cột tài nguyên huấn luyện không áp dụng. E1/E2 đều hoàn thành 300 bước; loss cuối lần lượt là 0,556115 và 0,483487 theo `run.json`. Các giá trị gốc đầy đủ nằm trong evidence, không lấy từ số làm tròn trong bảng để tính chênh lệch.
 
 ## 10 câu hỏi
 
@@ -31,7 +31,9 @@ E1 chỉ cập nhật LoRA trên LLM: 252 module LoRA, 33.030.144 tham số trai
 
 ### Câu 2 — Baseline E0
 
-Output `score.py` đã lưu trong notebook ghi `parse_valid_rate = 0,894` trên **311** ảnh, tương đương khoảng 10,6% đầu ra không được parser công nhận. E0 đạt precision **0,141**, recall **0,072**, F1 **0,095** và CI95 **[0,067; 0,125]**. Hai vấn đề có thể xác nhận là **định dạng không hợp lệ ở một phần đầu ra** và **bỏ sót/định vị sai hư hại** (recall thấp, đặc biệt crack **0,023**). Chưa lưu mẫu raw của đầu ra parse lỗi, nên chưa thể khẳng định kiểu lỗi JSON nào xuất hiện nhiều nhất. Ví dụ raw có thật trong output notebook: `[{"label":"manhole","bbox_2d": [770, 640, 843, 687]}]`; đây là ví dụ đúng cú pháp, không được dùng làm minh chứng lỗi parse. Cần lọc `work/e0.jsonl` bằng `parse_output` để trích hai ví dụ lỗi thực tế khi khôi phục/chạy lại E0.
+`e0.json` ghi `parse_valid_rate = 0,893891` trên **311** ảnh: khoảng 10,6% đầu ra không được parser công nhận. E0 đạt precision **0,140940**, recall **0,072041**, F1 **0,095346** và CI95 **[0,066736; 0,124861]**. Có **42 TP, 256 FP, 541 FN**; recall thấp cho thấy mô hình bỏ sót nhiều box ở ngưỡng IoU 0,5. Crack yếu nhất với recall **0,023411**. Chưa có `work/e0.jsonl` ở local để phân loại dạng lỗi JSON; ví dụ raw từng thấy trong notebook `[{"label":"manhole","bbox_2d": [770, 640, 843, 687]}]` là JSON đúng cú pháp, không phải minh chứng parse lỗi.
+
+Sau SFT, E1 có `parse_valid_rate = 0,993569`, F1 **0,262626**, hơn E0 **0,167280** điểm F1; cả điều kiện parse ≥ 0,95 và chênh F1 ≥ 0,10 của rubric đều đạt theo hai file evidence. E2 có parse hợp lệ **1,0** và F1 **0,324910**.
 
 ### Câu 3 — Thang tọa độ 0–1000 và pixel
 
@@ -65,20 +67,24 @@ Tổng là **2.009 ảnh**, **18 session**, **4.737 box**. Split theo session t�
 
 ### Câu 7 — E1/E2/E3: lợi ích so với tài nguyên
 
-Metadata huấn luyện E1 cho thấy **33.030.144** tham số trainable, **10,362413 GB**, **44,251577 phút** cho 300 bước, loss cuối **0,5561**. Metadata E2 cho thấy **142.135.296** tham số trainable, **8,419290 GB**, **44,454236 phút** cho 300 bước, loss cuối **0,4835**. Không nên kết luận E2 tiết kiệm VRAM hơn E1 từ hai số đỉnh này: phải xác nhận hai lần đo dùng cùng điều kiện runtime và cách reset bộ đếm. E1/E2 chưa có F1 và CI95 trong repo; E3 chưa chạy. Vì thiếu kết quả chấm test, **chưa thể kết luận** mở projector hoặc LoRA ViT có đáng chi phí hay không. Sau khi có evidence, so sánh chênh lệch F1 cùng CI95 và chi phí VRAM/phút trên cùng tập test 311 ảnh.
+E1 cập nhật **33.030.144** tham số, chạy **44,251577 phút** cho 300 bước với VRAM đỉnh **10,362413 GB**. F1 test đạt **0,262626**, CI95 **[0,227066; 0,302457]**, tăng **0,167280** so với E0. E2 mở thêm projector, nâng số trainable lên **142.135.296** (thêm **109.105.152**), chạy **44,454236 phút**, VRAM đỉnh **8,419290 GB**. F1 E2 là **0,324910**, CI95 **[0,285470; 0,365672]**, tăng **0,062283** so với E1. E2 có **180 TP, 345 FP, 403 FN**, so với E1 là **143 TP, 363 FP, 440 FN**; trên test này, việc mở projector đi cùng tăng TP và giảm cả FP lẫn FN.
+
+Hai CI95 của E1/E2 giao nhau tại khoảng **[0,285470; 0,302457]**. Kết quả điểm nghiêng về E2 nhưng chỉ nhìn CI riêng từng setup chưa đủ kết luận mức chắc chắn của chênh lệch; cần prediction theo ảnh để bootstrap hiệu F1 ghép cặp. VRAM E2 đo được thấp hơn E1 dù có nhiều tham số trainable hơn; đây là hai phép đo ở các lượt chạy khác nhau, không chứng minh E2 ít tốn bộ nhớ về mặt kiến trúc. Thời gian đo chỉ chênh khoảng **0,203 phút**. E3 chưa có số liệu, nên chưa thể đánh giá lợi ích của LoRA ViT.
 
 ### Câu 8 — CI95 trên 311 ảnh
 
-Trọng tài bootstrap lấy mẫu lại **311 ảnh có hoàn lại**, tính micro F1 cho mỗi mẫu, lặp **1.000** lần với seed cố định và lấy các phân vị 2,5%–97,5%. E0 in ra CI95 **[0,067; 0,125]**, độ rộng **0,058** (các số đã làm tròn); F1 điểm là **0,095**. Khoảng này thể hiện độ nhạy của kết quả E0 với thành phần ảnh test, nhất là khi chỉ có ba session test. Cùng một tập ảnh còn tạo phụ thuộc giữa các setup, nên chỉ nhìn CI95 từng setup có giao nhau hay không là dấu hiệu thô. Để khẳng định chênh lệch nhỏ, nên bootstrap **hiệu F1 theo cặp trên cùng ảnh**, tốt hơn nữa xem thêm biến thiên theo session. Chưa có evidence E1–E3 nên chưa thể tính độ rộng CI hoặc khẳng định setup nào hơn setup nào.
+Trọng tài bootstrap lấy mẫu lại **311 ảnh có hoàn lại**, tính micro F1 cho mỗi mẫu, lặp **1.000** lần với seed cố định và lấy các phân vị 2,5%–97,5%. CI95 trong evidence là E0 **[0,066736; 0,124861]** (rộng **0,058124**), E1 **[0,227066; 0,302457]** (rộng **0,075391**) và E2 **[0,285470; 0,365672]** (rộng **0,080202**). F1 điểm lần lượt **0,095346**, **0,262626**, **0,324910**. Độ rộng E1/E2 lớn hơn E0 trong các lần bootstrap này; chỉ từ JSON tổng hợp chưa thể quy nguyên nhân cụ thể cho chênh lệch độ rộng.
+
+Tập test chỉ có **3 session**, nên bootstrap theo ảnh có thể đánh giá thấp sự bất định khi triển khai trên session hoàn toàn mới. E0/E1 có CI tách rời, còn E1/E2 có CI giao nhau. Cùng một tập ảnh tạo phụ thuộc giữa các setup; để đánh giá chênh E2−E1 cần bootstrap **hiệu F1 theo cặp trên cùng ảnh**, và nên xem thêm biến thiên theo session. Hiện chỉ có JSON tổng hợp, chưa có prediction JSONL để tính paired bootstrap. E3 chưa có evidence.
 
 ### Câu 9 — Lỗi theo lớp và ảnh minh họa
 
-Ở E0, **crack yếu nhất**: P **0,038**, R **0,023**, F1 **0,029**; pothole F1 **0,123**, manhole F1 **0,212**. Test có **299** box crack, nhiều hơn pothole (**121**), vì vậy không thể quy kết kết quả E0 thấp đơn thuần do thiếu mẫu test. Giả thuyết kỹ thuật là crack thường mảnh/dài, ranh giới khó xác định và IoU@0.5 nhạy với lệch tọa độ; cần xem box thực tế mới xác nhận nguyên nhân cho các ảnh cụ thể. **Chưa có sáu ảnh dự đoán đối chiếu GT** vì dữ liệu ảnh và `work/e0.jsonl`/`work/e1.jsonl` chưa được xuất về local. Mục này phải bổ sung ảnh thật, chú thích TP/FP/FN và liên kết tới file ảnh trước khi nộp.
+Ở E0, **crack yếu nhất**: P **0,038043**, R **0,023411**, F1 **0,028986**; pothole F1 **0,123457**, manhole F1 **0,211864**. E1 nâng F1 crack lên **0,188737**, E2 lên **0,246998**. E2 đạt F1 pothole **0,187755** và manhole **0,607143**. Tuy vậy, crack vẫn có **212 FP, 227 FN** ở E2, nên là lớp cần ưu tiên xem ảnh sai. Test có **299** box crack, nhiều hơn pothole (**121**), vì vậy không thể quy kết kết quả thấp đơn thuần do thiếu mẫu test. Giả thuyết kỹ thuật là crack thường mảnh/dài và IoU@0.5 nhạy với lệch tọa độ; cần ảnh và prediction để xác nhận từng lỗi. **Chưa có sáu ảnh đối chiếu GT/prediction** vì local chưa có `data/` và `work/e*.jsonl`; không thể dựng minh họa thật chỉ từ evidence tổng hợp.
 
 ### Câu 10 — E4 ablation đơn biến
 
-Notebook đã chuẩn bị E4 cho **biến rank LoRA**, hai mức `r=4, alpha=8` và `r=64, alpha=128`. Cùng một setup nền tốt nhất E1–E3, tập train, số bước, learning rate, prompt, thang tọa độ và tập test phải giữ nguyên. Alpha thay đổi theo quy tắc `alpha=2r`, giữ tỉ số alpha/r bằng 2; đây là cách thực thi biến độ rộng rank theo đề bài. **Hai nhánh chưa chạy**, chưa có `e4_rank_4.json` hay `e4_rank_64.json`, nên chưa thể nêu chiều thay đổi F1 hay kết luận độ tin cậy. Sau khi chạy, báo F1 và CI95 của cả hai; CI giao nhau không chứng minh hai setup bằng nhau, và CI không giao nhau là bằng chứng mạnh hơn nhưng vẫn cần xét paired bootstrap khi so sánh sát nhau.
+Notebook đã chuẩn bị E4 cho **biến rank LoRA**, hai mức `r=4, alpha=8` và `r=64, alpha=128`. Cùng một setup nền tốt nhất E1–E3, tập train, số bước, learning rate, prompt, thang tọa độ và tập test phải giữ nguyên. Alpha thay đổi theo quy tắc `alpha=2r`, giữ tỉ số alpha/r bằng 2; đây là cách thực thi biến độ rộng rank theo đề bài. Trong các setup đã đo, E2 đang cao nhất (**0,324910**), nhưng phải chấm E3 trước khi chọn setup nền cuối cùng. **Hai nhánh E4 chưa chạy**, nên chưa thể nêu chiều thay đổi F1 hay kết luận độ tin cậy. Sau khi chạy, báo F1 và CI95 của cả hai; CI giao nhau không chứng minh hai setup bằng nhau, và CI không giao nhau là bằng chứng mạnh hơn nhưng vẫn cần xét paired bootstrap khi so sánh sát nhau.
 
 ## Nhìn lại và việc còn thiếu trước khi nộp
 
-Các lỗi thực tế đã gặp: gradient FP16 của 8 bias projector làm `GradScaler` dừng E2; sai cấu hình skip visual khiến projector không được mở đầy đủ; `CheckpointError` khi kết hợp gradient checkpointing với nhánh thị giác; phiên Colab mất GPU trước khi hoàn thiện inference/evidence. E2 hiện có checkpoint-100/200/300 và `run.json` trên Drive theo ảnh người thực hiện cung cấp. Bản notebook cần được chạy theo từng cell và lưu kết quả về Drive/GitHub; output hiển thị trong giao diện Colab không thay thế file evidence. Các mục cần làm tiếp: khôi phục/chạy lại E0 và E1 để lấy evidence, chấm E2 từ checkpoint-300, train/chấm E3, chạy cả hai nhánh E4, tạo sáu ảnh minh họa và đối chiếu toàn bộ số trong bảng với evidence trước khi nộp.
+Các lỗi thực tế đã gặp: gradient FP16 của 8 bias projector làm `GradScaler` dừng E2; sai cấu hình skip visual khiến projector không được mở đầy đủ; `CheckpointError` khi kết hợp gradient checkpointing với nhánh thị giác; phiên Colab cũ hết GPU, sau đó chuyển sang tài khoản khác và dùng lối tắt Drive để đọc checkpoint. E0/E1/E2 hiện đã có evidence chính thức trong repo local. Việc còn lại: train/chấm E3, chạy cả hai nhánh E4, lấy `data/` và `work/e*.jsonl` về local để tạo sáu ảnh minh họa thật, và kiểm tra cuối trước khi nộp. Output hiển thị trong giao diện Colab không thay thế file evidence.

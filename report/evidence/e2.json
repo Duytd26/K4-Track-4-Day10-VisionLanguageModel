@@ -1,0 +1,71 @@
+{
+  "n_images": 311,
+  "parse_valid_rate": 1.0,
+  "missing_predictions": 0,
+  "micro": {
+    "precision": 0.34285714285714286,
+    "recall": 0.30874785591766724,
+    "f1": 0.3249097472924188,
+    "tp": 180,
+    "fp": 345,
+    "fn": 403
+  },
+  "per_class": {
+    "pothole": {
+      "precision": 0.18548387096774194,
+      "recall": 0.19008264462809918,
+      "f1": 0.18775510204081633,
+      "tp": 23,
+      "fp": 101,
+      "fn": 98
+    },
+    "crack": {
+      "precision": 0.2535211267605634,
+      "recall": 0.2408026755852843,
+      "f1": 0.2469982847341338,
+      "tp": 72,
+      "fp": 212,
+      "fn": 227
+    },
+    "manhole": {
+      "precision": 0.7264957264957265,
+      "recall": 0.5214723926380368,
+      "f1": 0.6071428571428572,
+      "tp": 85,
+      "fp": 32,
+      "fn": 78
+    },
+    "other": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+    }
+  },
+  "mean_iou": 0.6709584155283597,
+  "fp_per_image": 1.1093247588424437,
+  "f1_ci95": [
+    0.2854700854700854,
+    0.3656716417910447
+  ],
+  "score_version": 1,
+  "name": "E2",
+  "dataset_version": "d10-21e4070301",
+  "split": "test",
+  "coord": "norm1000",
+  "meta": {
+    "trainable_params": 142135296,
+    "peak_vram_gb": 8.41929,
+    "train_minutes": 44.454236,
+    "base_setup": "E2",
+    "lora_r": 16,
+    "lora_alpha": 32,
+    "train_fraction": 1.0,
+    "learning_rate": 0.0002,
+    "batch_size": 2,
+    "grad_accum": 4,
+    "effective_batch_size": 8
+  }
+}
