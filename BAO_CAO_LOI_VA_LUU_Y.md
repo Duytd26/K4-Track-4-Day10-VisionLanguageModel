@@ -17,5 +17,5 @@ Tài liệu ghi lại triệu chứng từ các lần chạy thực tế của T
 - `runs/E2/checkpoint-300` và `runs/E2/run.json` trên Google Drive là **kết quả huấn luyện E2**, chưa phải F1. File `e2.json` chỉ được tạo sau khi suy luận đủ 311 ảnh và chạy trọng tài.
 - Output E0 trong notebook cho F1 làm tròn 0,095 nhưng file `e0.json` chưa có trong repository. Không dựng file evidence từ output đã làm tròn.
 - Mỗi runtime Colab mới cần nạp lại dữ liệu, model và các định nghĩa hàm. `DRIVE_RUNS` chỉ có sau khi mount Drive.
-- Sao lưu `report/evidence/*.json` và `work/*.jsonl` ngay sau khi chấm. Evidence JSON được commit; prediction JSONL, ảnh gốc và trọng số không được commit.
+- Notebook mới tự sao lưu `work/*.jsonl` theo từng batch và `report/evidence/*.json` sau khi chấm vào Drive `day10-vlm/artifacts/`. Kiểm tra file backup trước khi đóng runtime. Evidence JSON được commit; prediction JSONL, ảnh gốc và trọng số không được commit.
 - Không sửa `scripts/` hoặc `tests/` của đề bài.

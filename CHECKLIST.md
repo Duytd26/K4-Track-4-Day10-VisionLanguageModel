@@ -4,12 +4,12 @@ Cập nhật 14/10/2026. Chỉ đánh dấu hoàn tất khi file thật có tron
 
 | Việc | Trạng thái | Bằng chứng / thao tác tiếp theo |
 |---|---|---|
-| Repository cá nhân có ít nhất 5 commit | Đạt | 13 commit khi rà soát |
+| Repository cá nhân có ít nhất 5 commit | Đạt | Đã vượt ngưỡng 5 commit; kiểm tra số mới nhất bằng `git rev-list --count HEAD` |
 | Không track dữ liệu, khóa và trọng số | Đạt | `git ls-files` và `check_submission.py` đều không thấy file cấm |
 | Split theo session đã kiểm tra | Đạt trong output notebook | `d10-21e4070301`, 1.422/276/311 ảnh; cần có `data/splits/meta.json` khi đối chiếu cuối |
-| `e0.json` | Thiếu trong repo | Nếu runtime Colab cũ còn sống, lấy `report/evidence/e0.json`; nếu không, chạy lại cell E0 rồi `score.py` |
-| `e1.json` | Thiếu trong repo | Đã nhận `run.json` E1 với 300 bước, VRAM 10,362413 GB, 44,251577 phút; cần checkpoint/adapter trên Drive để chạy `infer_and_score("E1")`, hoặc xuất evidence gốc từ runtime cũ |
-| `e2.json` | Chưa chấm | Đã nhận `run.json` E2 với 300 bước, VRAM 8,419290 GB, 44,454236 phút; checkpoint ở Drive `runs/E2/checkpoint-300`. Dựng lại môi trường rồi chạy `infer_and_score("E2")` |
+| `e0.json` | Thiếu trong repo và Drive | Drive `day10-vlm` không có E0 evidence/prediction ở lần rà soát; cần chạy lại cell E0 rồi `score.py` |
+| `e1.json` | Thiếu trong repo và Drive | Đã xác nhận Drive có `runs/E1/checkpoint-300/adapter/adapter_model.safetensors` và `run.json`; dựng lại dữ liệu test rồi chạy `infer_and_score("E1")` |
+| `e2.json` | Chưa chấm | Đã xác nhận Drive có `runs/E2/checkpoint-300/adapter/adapter_model.safetensors`, `projector.pt` và `run.json`; dựng lại dữ liệu test rồi chạy `infer_and_score("E2")` |
 | `e3.json` | Chưa chạy | Train E3, sau đó suy luận và chấm |
 | E4 rank r=4 và r=64 | Chưa chạy | Chỉ chạy sau khi có `e1.json`–`e3.json`; notebook tự chọn setup nền theo F1 |
 | Sáu ảnh GT/prediction | Thiếu | Cần dữ liệu ảnh và prediction JSONL thật; ghi rõ TP/FP/FN, không dùng ảnh minh họa giả |
@@ -21,6 +21,8 @@ Cập nhật 14/10/2026. Chỉ đánh dấu hoàn tất khi file thật có tron
 ## Lấy `e0.json` từ Colab
 
 Trong **đúng runtime đã chạy E0**, mở thanh Files (biểu tượng thư mục), tìm `/content/K4-Track-4-Day10-VisionLanguageModel/report/evidence/e0.json`, bấm menu ba chấm → **Download**. Tải thêm `work/e0.jsonl` để phân tích lỗi và vẽ ảnh. Tải file evidence về máy, đặt đúng `report/evidence/e0.json` trong repository. Nếu runtime đã bị xóa và file chưa sao lưu, output hiển thị trong notebook không thể khôi phục mọi trường trong JSON; phải chạy lại suy luận/chấm E0.
+
+Notebook mới sao lưu `work/*.jsonl` sau mỗi batch suy luận và `report/evidence/*.json` sau khi chấm vào `/content/drive/MyDrive/day10-vlm/artifacts/`. Sau khi mount Drive và chạy cell định nghĩa `restore_artifact`, có thể khôi phục một file đã sao lưu bằng `restore_artifact("report/evidence/e0.json")` hoặc `restore_artifact("work/e0.jsonl")`. Thay đổi này chỉ bảo vệ các lượt chạy **từ lúc dùng notebook mới**, không khôi phục file E0 đã mất ở runtime cũ.
 
 ## Tiếp tục E2 khi có GPU Colab
 
