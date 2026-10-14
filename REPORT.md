@@ -6,7 +6,7 @@
 
 **Dataset version:** `d10-21e4070301` (output kiểm tra split đã lưu trong `lab_day10.ipynb`).
 
-> **Trạng thái bằng chứng:** `report/evidence/e0.json`–`e3.json` là kết quả chấm thật trên cùng 311 ảnh test (`dataset_version=d10-21e4070301`). Bảng dưới đây lấy trực tiếp từ các file đó; các số thập phân được làm tròn tới 6 chữ số. Hai nhánh E4 đang chạy, chưa có evidence để điền điểm. Metadata huấn luyện E1/E2 được đối chiếu thêm với `report/training/e1_run.json` và `e2_run.json`; metadata E3 lấy từ `e3.json`.
+> **Trạng thái bằng chứng:** `report/evidence/e0.json`–`e3.json` và `e4_rank_4.json` là kết quả chấm thật trên cùng 311 ảnh test (`dataset_version=d10-21e4070301`). Bảng dưới đây lấy trực tiếp từ các file đó; các số thập phân được làm tròn tới 6 chữ số. Nhánh E4 `r=64` đang chạy, chưa có evidence để điền điểm. Metadata huấn luyện E1/E2 được đối chiếu thêm với `report/training/e1_run.json` và `e2_run.json`.
 
 ## Bảng tổng hợp
 
@@ -16,7 +16,7 @@
 | E1 | LoRA LLM | 33.030.144 | 10,362413 | 44,251577 | 0,262626 | 0,227066–0,302457 | 1,167203 | 0,172973 | 0,188737 | 0,526316 |
 | E2 | E1 + mở projector | 142.135.296 | 8,419290 | 44,454236 | 0,324910 | 0,285470–0,365672 | 1,109325 | 0,187755 | 0,246998 | 0,607143 |
 | E3 | E2 + LoRA ViT | 148.426.752 | 11,867236 | 50,290870 | 0,435411 | 0,393443–0,480148 | 0,909968 | 0,304147 | 0,373109 | 0,657627 |
-| E4 r=4 | Ablation `rank`, alpha=8 | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy |
+| E4 r=4 | E3 + LoRA rank 4, alpha=8 | 118.935.552 | 11,429017 | 49,956769 | 0,455516 | 0,416523–0,495528 | 0,916399 | 0,302521 | 0,378378 | 0,734694 |
 | E4 r=64 | Ablation `rank`, alpha=128 | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy |
 
 E0 không có tham số được huấn luyện, nên hai cột tài nguyên huấn luyện không áp dụng. E1/E2 đều hoàn thành 300 bước; loss cuối lần lượt là 0,556115 và 0,483487 theo `run.json`. E3 có metadata huấn luyện trong evidence; chưa có `run.json` E3 ở local để bổ sung loss cuối. Các giá trị gốc đầy đủ nằm trong evidence, không lấy từ số làm tròn trong bảng để tính chênh lệch.
@@ -85,8 +85,8 @@ Tập test chỉ có **3 session**, nên bootstrap theo ảnh có thể đánh g
 
 ### Câu 10 — E4 ablation đơn biến
 
-Notebook đã chuẩn bị E4 cho **biến rank LoRA**, hai mức `r=4, alpha=8` và `r=64, alpha=128`. Setup nền là **E3**, vì F1 E3 **0,435411** cao nhất trong E1–E3; output của cell E4 đã xác nhận lựa chọn này. Tập train, số bước, learning rate, prompt, thang tọa độ và tập test giữ nguyên. Alpha thay đổi theo quy tắc `alpha=2r`, giữ tỉ số alpha/r bằng 2; đây là cách thực thi biến độ rộng rank theo đề bài. **Hai nhánh E4 đang chạy**, chưa có evidence local để nêu chiều thay đổi F1 hay kết luận độ tin cậy. Sau khi chạy, báo F1 và CI95 của cả hai; CI giao nhau không chứng minh hai setup bằng nhau, và CI không giao nhau là bằng chứng mạnh hơn nhưng vẫn cần xét paired bootstrap khi so sánh sát nhau.
+Notebook thực hiện E4 cho **biến rank LoRA**, hai mức `r=4, alpha=8` và `r=64, alpha=128`. Setup nền là **E3**, vì F1 E3 **0,435411** cao nhất trong E1–E3; output của cell E4 đã xác nhận lựa chọn này. Tập train, số bước, learning rate, prompt, thang tọa độ và tập test giữ nguyên. Alpha thay đổi theo quy tắc `alpha=2r`, giữ tỉ số alpha/r bằng 2; đây là cách thực thi biến độ rộng rank theo đề bài. Nhánh **r=4** đã chấm: F1 **0,455516**, CI95 **[0,416523; 0,495528]**, cao hơn E3 rank 16 **0,020105** điểm F1. Hai CI này giao nhau; chênh lệch điểm chưa đủ để kết luận rank 4 tốt hơn rank 16. Nhánh **r=64 đang chạy**, nên chưa thể kết luận phép so sánh ablation hai mức rank. Sau khi có evidence r=64, so sánh F1 và CI95 của hai nhánh; CI giao nhau không chứng minh hai setup bằng nhau, và paired bootstrap trên cùng ảnh sẽ hữu ích nếu chênh lệch sát nhau.
 
 ## Nhìn lại và việc còn thiếu trước khi nộp
 
-Các lỗi thực tế đã gặp: gradient FP16 của 8 bias projector làm `GradScaler` dừng E2; sai cấu hình skip visual khiến projector không được mở đầy đủ; `CheckpointError` khi kết hợp gradient checkpointing với nhánh thị giác; `torchao 0.10.0` không tương thích PEFT ở lần thử E3 đầu; phiên Colab cũ hết GPU, sau đó chuyển sang tài khoản khác và dùng lối tắt Drive để đọc checkpoint. E0–E3 hiện đã có evidence chính thức trong repo local. Việc còn lại: hoàn thành và chấm cả hai nhánh E4, lấy `data/` và `work/e*.jsonl` về local để tạo sáu ảnh minh họa thật, và kiểm tra cuối trước khi nộp. Output hiển thị trong giao diện Colab không thay thế file evidence.
+Các lỗi thực tế đã gặp: gradient FP16 của 8 bias projector làm `GradScaler` dừng E2; sai cấu hình skip visual khiến projector không được mở đầy đủ; `CheckpointError` khi kết hợp gradient checkpointing với nhánh thị giác; `torchao 0.10.0` không tương thích PEFT ở lần thử E3 đầu; phiên Colab cũ hết GPU, sau đó chuyển sang tài khoản khác và dùng lối tắt Drive để đọc checkpoint. E0–E3 và E4 rank 4 đã có evidence chính thức trong repo local. Việc còn lại: hoàn thành và chấm E4 rank 64, lấy `data/` và `work/e*.jsonl` về local để tạo sáu ảnh minh họa thật, và kiểm tra cuối trước khi nộp. Output hiển thị trong giao diện Colab không thay thế file evidence.
