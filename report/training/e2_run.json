@@ -1,0 +1,21 @@
+{
+  "name": "E2",
+  "base_setup": "E2",
+  "model_id": "Qwen/Qwen3-VL-4B-Instruct",
+  "lora_r": 16,
+  "lora_alpha": 32,
+  "train_fraction": 1.0,
+  "completed_steps": 300,
+  "trainable_params": 142135296,
+  "lora_modules": 252,
+  "projector_params": 109105152,
+  "peak_vram_gb": 8.419289588928223,
+  "train_minutes": 44.45423585258332,
+  "last_loss": 0.483486570417881,
+  "batch_size": 2,
+  "grad_accum": 4,
+  "learning_rate": 0.0002,
+  "effective_batch_size": 8,
+  "checkpoint": "work/E2/checkpoint-300",
+  "seed": 42
+}

@@ -14,12 +14,12 @@
 |---|---|---:|---:|---:|---:|---|---:|---:|---:|---:|
 | E0 | Zero-shot | 0 | Chưa ghi | Chưa ghi | 0,095 | 0,067–0,125 | 0,82 | 0,123 | 0,029 | 0,212 |
 | E1 | LoRA LLM | 33.030.144¹ | 10,362413¹ | 44,251577¹ | Chưa chấm | Chưa chấm | Chưa chấm | Chưa chấm | Chưa chấm | Chưa chấm |
-| E2 | E1 + mở projector | 142.135.296 | 8,42² | 44,5² | Chưa chấm | Chưa chấm | Chưa chấm | Chưa chấm | Chưa chấm | Chưa chấm |
+| E2 | E1 + mở projector | 142.135.296 | 8,419290² | 44,454236² | Chưa chấm | Chưa chấm | Chưa chấm | Chưa chấm | Chưa chấm | Chưa chấm |
 | E3 | E2 + LoRA ViT | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy |
 | E4 r=4 | Ablation `rank`, alpha=8 | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy |
 | E4 r=64 | Ablation `rank`, alpha=128 | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy | Chưa chạy |
 
-¹ Metadata E1 lấy từ `run.json` người thực hiện cung cấp: 300 bước, `peak_vram_gb=10.362412929534912`, `train_minutes=44.25157671504997`, loss cuối 0,5561. Hai giá trị hiển thị ở bảng được làm tròn tới 6 chữ số sau dấu phẩy như lệnh tạo evidence trong notebook; cần đối chiếu với `e1.json` sau khi chấm. ² Log E2 ở bước 300 ghi VRAM 8,42 GB và thời gian 44,5 phút; `run.json` trên Drive là nguồn cần đối chiếu lại để điền độ chính xác đầy đủ. Các số E0 đã làm tròn, cần thay bằng giá trị từ `e0.json` trước khi nộp.
+¹ Metadata E1 lấy từ `run.json` người thực hiện cung cấp: 300 bước, `peak_vram_gb=10.362412929534912`, `train_minutes=44.25157671504997`, loss cuối 0,5561. ² Metadata E2 lấy từ `run.json` người thực hiện cung cấp: 300 bước, `peak_vram_gb=8.419289588928223`, `train_minutes=44.45423585258332`, loss cuối 0,4835. Các giá trị VRAM/thời gian ở bảng được làm tròn tới 6 chữ số sau dấu phẩy như lệnh tạo evidence trong notebook; cần đối chiếu với `e1.json`/`e2.json` sau khi chấm. Các số E0 đã làm tròn, cần thay bằng giá trị từ `e0.json` trước khi nộp.
 
 ## 10 câu hỏi
 
@@ -49,7 +49,7 @@ Kiểm tra mẫu thực tế trong notebook: `image_grid_thw=[1,22,40]`, tương
 
 Để E2 cập nhật projector đầy đủ, các lớp `visual.merger` và `visual.deepstack_merger_list` phải giữ trọng số khả vi dạng floating point. Notebook hiện dùng `llm_int8_skip_modules=["model.visual", "lm_head"]` khi nạp QLoRA NF4, nhằm giữ nhánh thị giác, bao gồm projector nằm bên trong `model.visual`, khỏi bị thay bằng lớp BitsAndBytes 4-bit. Trước đó cấu hình skip không khớp tên module đã dẫn tới trường hợp chỉ đếm được khoảng **54,58 triệu** tham số projector, trong khi bản hiện tại đếm **109.105.152**. Lượng tử hóa riêng ViT không phải định luật khiến mọi projector không thể train; vấn đề của mô hình và cấu hình này là projector **cùng nằm trong nhánh visual bị lượng tử hóa**.
 
-Lần chạy E2 cũ lỗi `Attempting to unscale FP16 gradients`; kiểm tra optimizer khi đó thấy **8 bias** projector còn gradient FP16. Mã sửa chuyển **toàn bộ tham số trainable** sang `float32` trước khi tạo optimizer, rồi xác nhận tập dtype trainable chỉ gồm `torch.float32`. Cách này tránh lỗi `GradScaler` và giúp cập nhật projector ổn định hơn trong môi trường tính toán FP16. Output E2 sau sửa cho thấy train đủ 300 bước, loss cuối **0,4835**, VRAM đỉnh **8,42 GB**. Trọng số projector được lưu riêng trong `projector.pt` và phải nạp lại khi suy luận E2/E3.
+Lần chạy E2 cũ lỗi `Attempting to unscale FP16 gradients`; kiểm tra optimizer khi đó thấy **8 bias** projector còn gradient FP16. Mã sửa chuyển **toàn bộ tham số trainable** sang `float32` trước khi tạo optimizer, rồi xác nhận tập dtype trainable chỉ gồm `torch.float32`. Cách này tránh lỗi `GradScaler` và giúp cập nhật projector ổn định hơn trong môi trường tính toán FP16. Metadata E2 sau sửa xác nhận train đủ 300 bước, loss cuối **0,483486570417881**, VRAM đỉnh **8,419289588928223 GB**. Trọng số projector được lưu riêng trong `projector.pt` và phải nạp lại khi suy luận E2/E3.
 
 ### Câu 6 — Chia dữ liệu theo phiên quay
 
@@ -65,7 +65,7 @@ Tổng là **2.009 ảnh**, **18 session**, **4.737 box**. Split theo session t�
 
 ### Câu 7 — E1/E2/E3: lợi ích so với tài nguyên
 
-Metadata huấn luyện E1 cho thấy **33.030.144** tham số trainable, **10,362413 GB**, **44,251577 phút** cho 300 bước, loss cuối **0,5561**. Log E2 cho thấy **142.135.296** tham số trainable, **8,42 GB**, **44,5 phút** cho 300 bước, loss cuối **0,4835**. Không nên kết luận E2 tiết kiệm VRAM hơn E1 từ hai số đỉnh này: phải xác nhận hai lần đo dùng cùng điều kiện runtime và cách reset bộ đếm. E1/E2 chưa có F1 và CI95 trong repo; E3 chưa chạy. Vì thiếu kết quả chấm test, **chưa thể kết luận** mở projector hoặc LoRA ViT có đáng chi phí hay không. Sau khi có evidence, so sánh chênh lệch F1 cùng CI95 và chi phí VRAM/phút trên cùng tập test 311 ảnh.
+Metadata huấn luyện E1 cho thấy **33.030.144** tham số trainable, **10,362413 GB**, **44,251577 phút** cho 300 bước, loss cuối **0,5561**. Metadata E2 cho thấy **142.135.296** tham số trainable, **8,419290 GB**, **44,454236 phút** cho 300 bước, loss cuối **0,4835**. Không nên kết luận E2 tiết kiệm VRAM hơn E1 từ hai số đỉnh này: phải xác nhận hai lần đo dùng cùng điều kiện runtime và cách reset bộ đếm. E1/E2 chưa có F1 và CI95 trong repo; E3 chưa chạy. Vì thiếu kết quả chấm test, **chưa thể kết luận** mở projector hoặc LoRA ViT có đáng chi phí hay không. Sau khi có evidence, so sánh chênh lệch F1 cùng CI95 và chi phí VRAM/phút trên cùng tập test 311 ảnh.
 
 ### Câu 8 — CI95 trên 311 ảnh
 

@@ -9,7 +9,7 @@ Cập nhật 14/10/2026. Chỉ đánh dấu hoàn tất khi file thật có tron
 | Split theo session đã kiểm tra | Đạt trong output notebook | `d10-21e4070301`, 1.422/276/311 ảnh; cần có `data/splits/meta.json` khi đối chiếu cuối |
 | `e0.json` | Thiếu trong repo | Nếu runtime Colab cũ còn sống, lấy `report/evidence/e0.json`; nếu không, chạy lại cell E0 rồi `score.py` |
 | `e1.json` | Thiếu trong repo | Đã nhận `run.json` E1 với 300 bước, VRAM 10,362413 GB, 44,251577 phút; cần checkpoint/adapter trên Drive để chạy `infer_and_score("E1")`, hoặc xuất evidence gốc từ runtime cũ |
-| `e2.json` | Chưa chấm | E2 đã có Drive `runs/E2/checkpoint-300` và `run.json`; dựng lại môi trường, chạy cell định nghĩa hàm và `infer_and_score("E2")` |
+| `e2.json` | Chưa chấm | Đã nhận `run.json` E2 với 300 bước, VRAM 8,419290 GB, 44,454236 phút; checkpoint ở Drive `runs/E2/checkpoint-300`. Dựng lại môi trường rồi chạy `infer_and_score("E2")` |
 | `e3.json` | Chưa chạy | Train E3, sau đó suy luận và chấm |
 | E4 rank r=4 và r=64 | Chưa chạy | Chỉ chạy sau khi có `e1.json`–`e3.json`; notebook tự chọn setup nền theo F1 |
 | Sáu ảnh GT/prediction | Thiếu | Cần dữ liệu ảnh và prediction JSONL thật; ghi rõ TP/FP/FN, không dùng ảnh minh họa giả |
