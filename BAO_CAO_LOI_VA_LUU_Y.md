@@ -1,6 +1,6 @@
 # Lỗi đã gặp và lưu ý khi tiếp tục trên Colab
 
-Tài liệu ghi lại triệu chứng từ các lần chạy thực tế của Trần Đình Duy. Số huấn luyện và chấm điểm chính thức nằm trong `REPORT.md` và `report/evidence/e0.json`–`e3.json`.
+Tài liệu ghi lại triệu chứng từ các lần chạy thực tế của Trần Đình Duy. Số huấn luyện và chấm điểm chính thức nằm trong `REPORT.md` và `report/evidence/` (E0–E3 cùng hai nhánh E4).
 
 | Triệu chứng | Điều đã quan sát | Xử lý trong notebook hiện tại |
 |---|---|---|
@@ -12,11 +12,12 @@ Tài liệu ghi lại triệu chứng từ các lần chạy thực tế của T
 | Colab báo hết hạn GPU | Hạn mức GPU tài khoản miễn phí | Không có thời điểm mở lại cố định; giữ checkpoint ở Drive, tiếp tục khi Colab cấp GPU. Không để hai notebook cùng tranh runtime |
 | `Run all` xếp hàng train/suy luận lại | Colab đang chạy notebook từ trên xuống | Dừng hàng đợi nếu vừa ấn nhầm, kiểm tra checkpoint và file evidence trước khi chạy riêng cell cần thiết |
 | E3 lỗi `Found an incompatible version of torchao ... 0.10.0` | PEFT 0.21.2 phát hiện `torchao` có sẵn trong Colab nhưng yêu cầu tối thiểu 0.16.0 | Gỡ `torchao` cũ; notebook đã thêm lệnh gỡ trong cell môi trường. Restart runtime nếu Python vẫn thấy package, sau đó chạy lại cell định nghĩa và E3, không train lại E0–E2 |
+| `pytest -q` còn 1 FAIL sau khi điền báo cáo | `tests/test_configs_and_docs.py::test_report_template_has_student_markers_and_ten_questions` yêu cầu REPORT chứa chuỗi `<điền`, trong khi `check_submission.py` yêu cầu chuỗi đó biến mất | Đây là hai điều kiện mâu thuẫn giữa kiểm thử mẫu và nghiệm thu bài đã điền. Giữ REPORT đã điền, không sửa `scripts/` hay `tests/`; kết quả hiện tại là 67 passed, 1 skipped, 1 failed cho test mẫu, còn `check_submission.py` đạt 0 FAIL |
 
 ## Quy tắc giữ kết quả
 
 - `runs/E2/checkpoint-300` và `runs/E2/run.json` trên Google Drive là **kết quả huấn luyện E2**; F1 thật hiện ở `report/evidence/e2.json` sau khi suy luận đủ 311 ảnh và chấm bằng trọng tài.
-- E0–E3 đều đã có evidence JSON thật trong repository local. Không dựng evidence E4 từ output làm tròn.
+- E0–E3 và cả hai nhánh E4 đều đã có evidence JSON thật trong repository local. Không dựng evidence E5 từ output làm tròn nếu chạy bonus sau.
 - Mỗi runtime Colab mới cần nạp lại dữ liệu, model và các định nghĩa hàm. `DRIVE_RUNS` chỉ có sau khi mount Drive.
 - Notebook mới tự sao lưu `work/*.jsonl` theo từng batch và `report/evidence/*.json` sau khi chấm vào Drive `day10-vlm/artifacts/`. Kiểm tra file backup trước khi đóng runtime. Evidence JSON được commit; prediction JSONL, ảnh gốc và trọng số không được commit.
 - Không sửa `scripts/` hoặc `tests/` của đề bài.
