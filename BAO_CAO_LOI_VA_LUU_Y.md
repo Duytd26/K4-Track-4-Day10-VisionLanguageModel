@@ -1,10 +1,10 @@
 # Lỗi đã gặp và lưu ý khi tiếp tục trên Colab
 
-Tài liệu ghi lại triệu chứng từ các lần chạy thực tế của Trần Đình Duy. Số huấn luyện và chấm điểm chính thức nằm trong `REPORT.md` và `report/evidence/e0.json`–`e2.json`.
+Tài liệu ghi lại triệu chứng từ các lần chạy thực tế của Trần Đình Duy. Số huấn luyện và chấm điểm chính thức nằm trong `REPORT.md` và `report/evidence/e0.json`–`e3.json`.
 
 | Triệu chứng | Điều đã quan sát | Xử lý trong notebook hiện tại |
 |---|---|---|
-| E4 báo thiếu `e2.json` | Khi đó E2 chưa chấm, dù đã train | E2 đã có evidence; tiếp tục E3 và chấm E3 trước khi chạy E4 |
+| E4 báo thiếu `e2.json` | Khi đó E2 chưa chấm, dù đã train | E0–E3 hiện đã có evidence; cell E4 đã chọn E3 làm setup nền |
 | `Attempting to unscale FP16 gradients` | Kiểm tra optimizer thấy 8 bias projector có gradient FP16 | `apply_setup` chuyển tất cả tham số trainable sang FP32 trước khi tạo optimizer; kiểm tra dtype |
 | Projector chỉ đếm khoảng 54,58 triệu tham số | Skip module visual không khớp tên nhánh thực tế | Nạp với `llm_int8_skip_modules=["model.visual", "lm_head"]`; kiểm tra visual không chứa `Linear4bit`. Bản E2 thành công đếm 109.105.152 tham số projector |
 | `CheckpointError` khi backward | Kết hợp checkpointing với nhánh visual đóng băng gây số tensor lưu lúc forward và recompute khác nhau | E1/E2 tắt checkpointing ở visual blocks; E3 đảm bảo đầu vào vision có gradient và dùng checkpointing phù hợp |
@@ -16,7 +16,7 @@ Tài liệu ghi lại triệu chứng từ các lần chạy thực tế của T
 ## Quy tắc giữ kết quả
 
 - `runs/E2/checkpoint-300` và `runs/E2/run.json` trên Google Drive là **kết quả huấn luyện E2**; F1 thật hiện ở `report/evidence/e2.json` sau khi suy luận đủ 311 ảnh và chấm bằng trọng tài.
-- E0, E1, E2 đều đã có evidence JSON thật trong repository. Không dựng evidence E3/E4 từ output làm tròn.
+- E0–E3 đều đã có evidence JSON thật trong repository local. Không dựng evidence E4 từ output làm tròn.
 - Mỗi runtime Colab mới cần nạp lại dữ liệu, model và các định nghĩa hàm. `DRIVE_RUNS` chỉ có sau khi mount Drive.
 - Notebook mới tự sao lưu `work/*.jsonl` theo từng batch và `report/evidence/*.json` sau khi chấm vào Drive `day10-vlm/artifacts/`. Kiểm tra file backup trước khi đóng runtime. Evidence JSON được commit; prediction JSONL, ảnh gốc và trọng số không được commit.
 - Không sửa `scripts/` hoặc `tests/` của đề bài.
