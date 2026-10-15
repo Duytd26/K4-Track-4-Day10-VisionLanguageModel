@@ -12,4 +12,5 @@ __pycache__/
 adapter*/
 .ipynb_checkpoints/
 .pytest_cache/
+day10_review*.zip
 .DS_Store

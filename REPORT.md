@@ -6,7 +6,7 @@
 
 **Dataset version:** `d10-21e4070301` (output kiểm tra split đã lưu trong `lab_day10.ipynb`).
 
-> **Trạng thái bằng chứng:** `report/evidence/e0.json`–`e3.json`, `e4_rank_4.json` và `e4_rank_64.json` là kết quả chấm thật trên cùng 311 ảnh test (`dataset_version=d10-21e4070301`). Bảng dưới đây lấy trực tiếp từ các file đó; các số thập phân được làm tròn tới 6 chữ số. Metadata huấn luyện E1/E2 được đối chiếu thêm với `report/training/e1_run.json` và `e2_run.json`. E5 là phần thưởng tùy chọn, dự kiến thực hiện sau.
+> **Trạng thái bằng chứng:** `report/evidence/e0.json`–`e3.json`, `e4_rank_4.json` và `e4_rank_64.json` là kết quả chấm thật trên cùng 311 ảnh test (`dataset_version=d10-21e4070301`), đã đối chiếu với `data/splits/meta.json`. Bảng dưới đây lấy trực tiếp từ các file đó; các số thập phân được làm tròn tới 6 chữ số. Metadata huấn luyện E1/E2 được đối chiếu thêm với `report/training/e1_run.json` và `e2_run.json`. Sáu ảnh minh họa từ dự đoán E3 được đính kèm ở Câu 9. E5 là phần thưởng tùy chọn, chỉ bổ sung khi có kết quả huấn luyện và chấm thật.
 
 ## Bảng tổng hợp
 
@@ -39,7 +39,7 @@ Sau SFT, E1 có `parse_valid_rate = 0,993569`, F1 **0,262626**, hơn E0 **0,1672
 
 Nhãn YOLO `[xc,yc,w,h]` trong `[0,1]` được đổi thành `(xc±w/2, yc±h/2)×1000`, làm tròn và chặn về `[0,1000]`. Một box có x trong khoảng 320–480 pixel ở ảnh rộng 640 tương ứng x khoảng 500–750 trên thang 1000. Nếu gửi box 0–1000 cho `score.py --coord pixel`, trọng tài sẽ tiếp tục chia x cho 640 và y cho 360 rồi nhân 1000: box bị phóng/đẩy lệch, IoU và F1 thay đổi. Chiều ngược lại làm box bị co về gần góc trên trái. Kiểm tra trong mã notebook: `objects_to_answer` dùng thang 1000; E0 và các setup mặc định chấm `norm1000`, còn E4 pixel phải dùng `--coord pixel`.
 
-**Chưa có phép chấm đối chứng trên cùng file prediction với hai cờ `--coord`**, nên chưa thể báo F1 sai thang bằng số. Trước khi nộp, chấm cùng `work/e0.jsonl` hoặc một file dự đoán khác với hai cờ `norm1000` và `pixel`, lưu kết quả đối chứng riêng và ghi hai F1 thật vào đây. Không thay thế evidence chính thức bằng lần chấm sai thang.
+Đã chấm đối chứng **cùng một file dự đoán thật `work/e3.jsonl` trên cùng 311 ảnh** bằng `score.py`: `--coord norm1000` cho **241 TP, F1 0,435411**; cố tình đổi duy nhất cờ sang `--coord pixel` cho **0 TP, F1 0,000000**, dù `parse_valid_rate` vẫn là **1,0**. Đây là kiểm tra lỗi diễn giải tọa độ, không phải một lần huấn luyện hoặc một evidence thay thế E3. Lệnh đối chứng: `python scripts/score.py --pred work/e3.jsonl --name E3_wrong_coord --split test --coord pixel --out work/e3_wrong_coord.json`.
 
 ### Câu 4 — Mask loss trên câu trả lời assistant
 
@@ -77,11 +77,39 @@ Hai CI95 của E1/E2 giao nhau tại khoảng **[0,285470; 0,302457]**; CI95 E2/
 
 Trọng tài bootstrap lấy mẫu lại **311 ảnh có hoàn lại**, tính micro F1 cho mỗi mẫu, lặp **1.000** lần với seed cố định và lấy các phân vị 2,5%–97,5%. CI95 trong evidence là E0 **[0,066736; 0,124861]** (rộng **0,058124**), E1 **[0,227066; 0,302457]** (rộng **0,075391**), E2 **[0,285470; 0,365672]** (rộng **0,080202**) và E3 **[0,393443; 0,480148]** (rộng **0,086705**). F1 điểm lần lượt **0,095346**, **0,262626**, **0,324910**, **0,435411**. Độ rộng tăng dần trong các lần bootstrap này; chỉ từ JSON tổng hợp chưa thể quy nguyên nhân cụ thể cho chênh lệch độ rộng.
 
-Tập test chỉ có **3 session**, nên bootstrap theo ảnh có thể đánh giá thấp sự bất định khi triển khai trên session hoàn toàn mới. E0/E1 và E2/E3 có CI tách rời, còn E1/E2 có CI giao nhau. Cùng một tập ảnh tạo phụ thuộc giữa các setup; để đánh giá chênh lệch cần bootstrap **hiệu F1 theo cặp trên cùng ảnh**, và nên xem thêm biến thiên theo session. Hiện chỉ có JSON tổng hợp, chưa có prediction JSONL để tính paired bootstrap.
+Tập test chỉ có **3 session**, nên bootstrap theo ảnh có thể đánh giá thấp sự bất định khi triển khai trên session hoàn toàn mới. Từ `work/e3.jsonl` và `test.jsonl`, chấm riêng ba session cho E3 được: `num-4` **15 ảnh, F1 0,541667**; `vlc-2025-02-18-23` **213 ảnh, F1 0,452414**; `vlc-2025-02-19-17` **83 ảnh, F1 0,383234**. Đây là các phép đo mô tả với cỡ session rất khác nhau, không phải CI cho quần thể phiên quay mới. E0/E1 và E2/E3 có CI tách rời, còn E1/E2 có CI giao nhau. Cùng một tập ảnh tạo phụ thuộc giữa các setup; muốn kết luận chênh lệch cần bootstrap **hiệu F1 theo cặp trên cùng ảnh**. Hiện mới có prediction JSONL E3 ở local, chưa có các file prediction của E0–E2 và hai nhánh E4 để làm phép bootstrap ghép cặp đó.
 
 ### Câu 9 — Lỗi theo lớp và ảnh minh họa
 
-Ở E0, **crack yếu nhất**: P **0,038043**, R **0,023411**, F1 **0,028986**; pothole F1 **0,123457**, manhole F1 **0,211864**. E1 nâng F1 crack lên **0,188737**, E2 lên **0,246998**, E3 lên **0,373109**. E3 đạt F1 pothole **0,304147** và manhole **0,657627**. Tuy vậy, crack vẫn có **185 FP, 188 FN** ở E3, nên là lớp cần ưu tiên xem ảnh sai. Test có **299** box crack, nhiều hơn pothole (**121**), vì vậy không thể quy kết kết quả thấp đơn thuần do thiếu mẫu test. Giả thuyết kỹ thuật là crack thường mảnh/dài và IoU@0.5 nhạy với lệch tọa độ; cần ảnh và prediction để xác nhận từng lỗi. **Chưa có sáu ảnh đối chiếu GT/prediction** vì local chưa có `data/` và `work/e*.jsonl`; không thể dựng minh họa thật chỉ từ evidence tổng hợp.
+Ở E0, **crack yếu nhất**: P **0,038043**, R **0,023411**, F1 **0,028986**; pothole F1 **0,123457**, manhole F1 **0,211864**. E1 nâng F1 crack lên **0,188737**, E2 lên **0,246998**, E3 lên **0,373109**. E3 đạt F1 pothole **0,304147** và manhole **0,657627**. Tuy vậy, crack vẫn có **185 FP, 188 FN** ở E3, nên là lớp cần ưu tiên xem ảnh sai. Test có **299** box crack, nhiều hơn pothole (**121**), vì vậy không thể quy kết kết quả thấp đơn thuần do thiếu mẫu test.
+
+Sáu ảnh test dưới đây được tạo từ **ảnh thật, GT trong `test.jsonl` và đầu ra E3 trong `work/e3.jsonl`**. **Xanh lá** là box GT, **đỏ** là box dự đoán; TP/FP/FN dùng cùng lớp và IoU ≥ 0,5 như trọng tài. Nhóm “có TP” gồm cả một ảnh còn FN, để không che giấu lỗi.
+
+1. **Đúng cả ba lớp**, TP=3, FP=0, FN=0: crack, manhole và pothole đều được ghép đúng.
+
+   ![E3 đúng cả ba lớp](report/examples/correct_01_vlcsnap-2025-02-18-23h10m48s405.png)
+
+2. **Ba pothole được phát hiện**, TP=3, FP=0, FN=0, trong ảnh cùng một phiên test khác.
+
+   ![E3 đúng ba pothole](report/examples/correct_02_vlcsnap-2025-02-19-17h04m47s362.png)
+
+3. **Ba crack đúng, một crack bị bỏ sót**, TP=3, FP=0, FN=1. Đây là trường hợp đúng một phần, không phải ảnh hoàn hảo.
+
+   ![E3 bỏ sót một crack](report/examples/correct_03_vlcsnap-2025-02-18-23h29m04s331.png)
+
+4. **Nhầm lớp và lặp box**, TP=0, FP=5, FN=4: mô hình sinh năm box `manhole` chồng nhau tại khu vực có pothole; hai manhole GT, một crack và pothole đều không được ghép đúng.
+
+   ![E3 nhầm lớp và lặp box](report/examples/error_01_vlcsnap-2025-02-19-17h05m37s430.png)
+
+5. **Crack có box nhưng lệch hình học**, TP=0, FP=4, FN=4: bốn box dự đoán đều mang đúng nhãn crack nhưng không đạt IoU 0,5 với box GT; đây là lỗi định vị, không phải JSON hỏng.
+
+   ![E3 định vị crack sai](report/examples/error_02_vlcsnap-2025-02-18-23h29m07s392.png)
+
+6. **Một box crack quá rộng**, TP=0, FP=1, FN=7: box đỏ bao gần hết vùng hư hại phía trước nhưng không khớp đủ IoU với ba crack GT, đồng thời bỏ sót bốn pothole.
+
+   ![E3 box crack quá rộng](report/examples/error_03_vlcsnap-2025-02-18-23h30m28s990.png)
+
+Hai ảnh crack ở mốc `23h29m04s` và `23h29m07s` chỉ cách nhau khoảng **3 giây** và cùng thuộc session test `vlc-2025-02-18-23`. Chúng minh họa trực quan lý do phải giữ nguyên session trong một split. Sáu ảnh cùng thống kê từng ảnh cũng được liệt kê tại [`report/examples/README.md`](report/examples/README.md).
 
 ### Câu 10 — E4 ablation đơn biến
 
@@ -91,4 +119,4 @@ Rank **4** đạt F1 **0,455516**, CI95 **[0,416523; 0,495528]**; rank **64** đ
 
 ## Nhìn lại và việc còn thiếu trước khi nộp
 
-Các lỗi thực tế đã gặp: gradient FP16 của 8 bias projector làm `GradScaler` dừng E2; sai cấu hình skip visual khiến projector không được mở đầy đủ; `CheckpointError` khi kết hợp gradient checkpointing với nhánh thị giác; `torchao 0.10.0` không tương thích PEFT ở lần thử E3 đầu; phiên Colab cũ hết GPU, sau đó chuyển sang tài khoản khác và dùng lối tắt Drive để đọc checkpoint. E0–E3 cùng cả hai nhánh E4 đã có evidence chính thức trong repo local. Việc còn lại trước khi nộp: lấy ảnh test và `work/e*.jsonl` để tạo sáu ảnh minh họa thật, đối chiếu `data/splits/meta.json` ở máy có dataset, rồi kiểm tra cuối. E5 là phần thưởng tùy chọn và sẽ được làm khi có GPU ở phiên tiếp theo. Output hiển thị trong giao diện Colab không thay thế file evidence.
+Các lỗi thực tế đã gặp: gradient FP16 của 8 bias projector làm `GradScaler` dừng E2; sai cấu hình skip visual khiến projector không được mở đầy đủ; `CheckpointError` khi kết hợp gradient checkpointing với nhánh thị giác; `torchao 0.10.0` không tương thích PEFT ở lần thử E3 đầu; phiên Colab cũ hết GPU, sau đó chuyển sang tài khoản khác và dùng lối tắt Drive để đọc checkpoint. E0–E3 cùng cả hai nhánh E4 đã có evidence chính thức; sáu ảnh đối chiếu thật đã được đính kèm. `data/splits/meta.json` trong zip Colab khớp dataset version của tất cả evidence. E5 vẫn là phần thưởng tùy chọn: chỉ ghi kết quả khi có `e5.json` và nhật ký GRPO thật. Output hiển thị trong giao diện Colab không thay thế file evidence.
