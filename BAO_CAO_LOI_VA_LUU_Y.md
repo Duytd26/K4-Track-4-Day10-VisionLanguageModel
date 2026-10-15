@@ -1,6 +1,6 @@
 # Lỗi đã gặp và lưu ý khi tiếp tục trên Colab
 
-Tài liệu ghi lại triệu chứng từ các lần chạy thực tế của Trần Đình Duy. Số huấn luyện và chấm điểm chính thức nằm trong `REPORT.md` và `report/evidence/` (E0–E3 cùng hai nhánh E4).
+Tài liệu ghi lại triệu chứng từ các lần chạy thực tế của Trần Đình Duy. Số huấn luyện và chấm điểm chính thức nằm trong `REPORT.md` và `report/evidence/` (E0–E3, hai nhánh E4 và E5).
 
 | Triệu chứng | Điều đã quan sát | Xử lý trong notebook hiện tại |
 |---|---|---|
@@ -20,7 +20,7 @@ Tài liệu ghi lại triệu chứng từ các lần chạy thực tế của T
 ## Quy tắc giữ kết quả
 
 - `runs/E2/checkpoint-300` và `runs/E2/run.json` trên Google Drive là **kết quả huấn luyện E2**; F1 thật hiện ở `report/evidence/e2.json` sau khi suy luận đủ 311 ảnh và chấm bằng trọng tài.
-- E0–E3 và cả hai nhánh E4 đều đã có evidence JSON thật trong repository. Sáu ảnh GT/dự đoán E3 đã được đưa vào `report/examples/` và nhúng trong Câu 9. Không dựng evidence E5 từ output làm tròn nếu chạy bonus sau.
+- E0–E3, cả hai nhánh E4 và E5 đều đã có evidence JSON thật trong repository. Sáu ảnh GT/dự đoán E3 đã được đưa vào `report/examples/` và nhúng trong Câu 9. E5 có thêm `report/training/e5_trainer_log.json`, `e5_run.json` và audit dự đoán/CI95 ghép cặp.
 - Mỗi runtime Colab mới cần nạp lại dữ liệu, model và các định nghĩa hàm. `DRIVE_RUNS` chỉ có sau khi mount Drive.
-- Notebook tự sao lưu `work/*.jsonl` theo từng batch và `report/evidence/*.json` sau khi chấm vào Drive `day10-vlm/artifacts/`. `work/e3.jsonl` đã được lấy về local để đối chiếu: chấm lại thang `norm1000` cho F1 **0,435411**, còn cố tình chấm như `pixel` cho F1 **0,000000**. Chỉ commit evidence JSON và sáu ảnh minh họa đã chọn; prediction JSONL, ảnh gốc, zip chuyển giao và trọng số không được commit.
+- Notebook tự sao lưu `work/*.jsonl` theo từng batch và `report/evidence/*.json` sau khi chấm vào Drive `day10-vlm/artifacts/`. `work/e3.jsonl` đã được lấy về local để đối chiếu: chấm lại thang `norm1000` cho F1 **0,435411**, còn cố tình chấm như `pixel` cho F1 **0,000000**. E5 được chấm lại từ 311 dự đoán cho F1 **0,430988**. Chỉ commit các file prediction E3/E5 cần cho audit dưới `report/predictions/`; ảnh gốc, nhãn GT trong `data/`, zip chuyển giao và trọng số không được commit.
 - Không sửa `scripts/` hoặc `tests/` của đề bài.

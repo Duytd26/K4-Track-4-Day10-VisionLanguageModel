@@ -12,22 +12,23 @@ Cập nhật 15/10/2026. Chỉ đánh dấu hoàn tất khi file thật có tron
 | `e2.json` | Có trong repo local | `report/evidence/e2.json`: parse 1,0, F1 0,324910; metadata khớp `report/training/e2_run.json` |
 | `e3.json` | Có trong repo local | `report/evidence/e3.json`: 311 ảnh, parse 1,0, F1 0,435411, CI95 [0,393443; 0,480148] |
 | E4 rank r=4 và r=64 | Đủ hai evidence | r=4: F1 0,455516, CI95 [0,416523; 0,495528]; r=64: F1 0,448339, CI95 [0,408747; 0,489152]. Hai CI giao nhau |
+| E5 GRPO bonus | Đủ evidence và log | 60/60 bước, 311/311 ảnh, F1 0,430988, CI95 [0,387597; 0,477585]; `report/training/e5_trainer_log.json`, `e5_run.json`, `e5_audit.json` và prediction E3/E5 đã lưu để đối chiếu |
 | Sáu ảnh GT/prediction | Đạt | `report/examples/` có 3 ảnh có TP và 3 ảnh lỗi, kèm README và chú thích từng ảnh trong Câu 9 |
-| `REPORT.md` | Đã cập nhật E0–E4 | Bảng, 10 câu, đối chứng sai thang tọa độ, phân tích theo session và 6 ảnh thật; chưa ghi E5 khi chưa có evidence |
+| `REPORT.md` | Đã cập nhật E0–E5 | Bảng, 10 câu, bonus GRPO với reward hacking và so sánh CI95 ghép cặp; 6 ảnh thật |
 | `check_submission.py` | 0 FAIL, 0 WARN trên máy local | `data/splits/meta.json` trong zip khớp evidence; file này bị Git bỏ qua. Bản clone sạch không có dữ liệu sẽ hiện 1 WARN cho phép đối chiếu metadata |
 | `python -m pytest -q` | 67 passed, 1 skipped, 1 failed | Test mẫu trong `tests/test_configs_and_docs.py` đòi `REPORT.md` còn `<điền`, trái với điều kiện nộp đã điền; không sửa file test của giảng viên |
 | Repository GitHub Public | Đạt | Trang GitHub hiển thị `Public` khi mở không đăng nhập |
-| Nộp URL trên LMS | Chưa làm | Nộp liên kết repo Public sau khi kiểm tra nội dung đã đẩy; E5 chỉ bổ sung nếu kịp hạn |
+| Nộp URL trên LMS | Chưa làm | Nộp liên kết repo Public sau khi kiểm tra nội dung đã đẩy |
 
 ## Evidence đã lấy từ Colab
 
-Bốn file `report/evidence/e0.json`–`e3.json` cùng `e4_rank_4.json` và `e4_rank_64.json` đã được đặt đúng vị trí trong repo. Zip từ Colab đã cung cấp `work/e3.jsonl`, `data/splits/meta.json`, `test.jsonl` và sáu ảnh test đã vẽ; dữ liệu `work/`, `data/` và zip nằm ngoài danh sách commit. Chấm lại E3 bằng trọng tài tái tạo đúng toàn bộ số trong `e3.json`. Nếu muốn phân tích sâu thêm E0 hoặc bootstrap hiệu F1 ghép cặp, còn cần prediction JSONL tương ứng từ Drive; đó không phải điều kiện bắt buộc của hồ sơ E0–E4.
+Bốn file `report/evidence/e0.json`–`e3.json` cùng `e4_rank_4.json`, `e4_rank_64.json` và `e5.json` đã được đặt đúng vị trí trong repo. Zip từ Colab đã cung cấp prediction E3/E5, log GRPO, `data/splits/meta.json`, `test.jsonl` và sáu ảnh test đã vẽ; dữ liệu `work/`, `data/` và zip nằm ngoài danh sách commit. Chấm lại E3 và E5 bằng trọng tài tái tạo đúng mọi trường điểm. Hai prediction JSONL được lưu dưới `report/predictions/` chỉ để tái lập so sánh ghép cặp và kiểm tra reward hacking; không chứa ảnh, nhãn GT, khóa API hay trọng số.
 
 Notebook sao lưu `work/*.jsonl` sau mỗi batch suy luận và `report/evidence/*.json` sau khi chấm vào `/content/drive/MyDrive/day10-vlm/artifacts/` của tài khoản Colab đang dùng. Sau khi mount đúng Drive và chạy cell định nghĩa `restore_artifact`, có thể khôi phục một file đã sao lưu bằng `restore_artifact("work/e3.jsonl")`. Evidence E0–E3 trong repo không chứa các dự đoán theo từng ảnh.
 
 ## Sau khi hoàn thành E4 trên GPU Colab
 
-E0–E3 và cả hai nhánh E4 đã train/chấm xong. **Không bấm Run all** hay chạy lại E1–E4. Giữ checkpoint trên Drive để đối chiếu metadata; E5 là phần thưởng tùy chọn, chỉ bổ sung khi có kết quả thật.
+E0–E3, cả hai nhánh E4 và E5 đã train/chấm xong. **Không bấm Run all** hay chạy lại các thí nghiệm. Giữ checkpoint trên Drive để đối chiếu metadata. Các hướng dẫn phiên GPU mới bên dưới chỉ phục vụ tái lập khi thật sự cần.
 
 ```python
 from pathlib import Path
@@ -67,7 +68,7 @@ Nếu E5 đã khởi tạo trainer nhưng dừng ngay bước đầu với lỗi
 
 Không chạy lại cell E0, các cell gọi `train_experiment("E1"/"E2"/"E3")`, cell `infer_and_score` riêng, hoặc cell E4 rank ablation. Nếu notebook mở trước khi GitHub cập nhật, thêm `from trl import GRPOConfig, GRPOTrainer` vào cell E5 hoặc mở lại bản mới từ GitHub; không restart runtime chỉ để lấy một dòng import.
 
-Sau mỗi lần chấm, sao lưu cả `report/evidence/*.json` và `work/*.jsonl` vào Drive hoặc tải về máy. Chỉ đưa evidence JSON và ảnh minh họa đã chọn lên GitHub; `work/`, `data/`, khóa và checkpoint phải ở ngoài Git. Khi đã có dữ liệu/prediction ở local, tạo sáu ảnh thật bằng:
+Sau mỗi lần chấm, sao lưu cả `report/evidence/*.json` và `work/*.jsonl` vào Drive hoặc tải về máy. Chỉ đưa evidence, log và các prediction JSONL **đã chọn dưới `report/`**, cùng ảnh minh họa lên GitHub; `work/`, `data/`, khóa và checkpoint phải ở ngoài Git. Khi đã có dữ liệu/prediction ở local, tạo sáu ảnh thật bằng:
 
 ```powershell
 python report/visualize_examples.py --pred work/e3.jsonl
@@ -107,4 +108,4 @@ git ls-files data work kaggle.json .env '*.pt' '*.safetensors' '*.bin'
 git rev-list --count HEAD
 ```
 
-Trước khi nộp, đối chiếu từng ô báo cáo với `report/evidence/*.json`, xác nhận repository Public và chỉ nộp khi `check_submission.py` báo **0 FAIL**. E5 có thể bổ sung sau bằng evidence/log thật nếu còn thời gian và hạn nộp cho phép.
+Trước khi nộp, đối chiếu từng ô báo cáo với `report/evidence/*.json`, xác nhận repository Public và chỉ nộp khi `check_submission.py` báo **0 FAIL**. E5 có evidence/log thật; `check_submission.py` của đề chỉ kiểm tra E0–E4 nên phần bonus đã được chấm lại và phân tích riêng.

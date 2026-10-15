@@ -1,0 +1,20 @@
+{
+  "name": "E5",
+  "base_setup": "E3",
+  "source_setup": "E3",
+  "model_id": "Qwen/Qwen3-VL-4B-Instruct",
+  "lora_r": 16,
+  "lora_alpha": 32,
+  "projector_params": 109105152,
+  "trainable_params": 148426752,
+  "train_minutes": 21.59562728893333,
+  "peak_vram_gb": 6.098492622375488,
+  "learning_rate": 5e-06,
+  "num_generations": 4,
+  "max_steps": 60,
+  "beta": 0.0,
+  "completed_steps": 60,
+  "dataset_version": "d10-21e4070301",
+  "seed": 42,
+  "checkpoint": "/content/K4-Track-4-Day10-VisionLanguageModel/work/E5/checkpoint-final"
+}
