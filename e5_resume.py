@@ -46,10 +46,14 @@ def resume_e5(context):
     if trainer.optimizer is not None and trainer.optimizer.state:
         raise RuntimeError("Optimizer has nonempty state; first-step recovery is unsafe")
 
-    print("E5 trainable parameters restored to FP32; resuming trainer in RAM.")
+    print("E5 trainable parameters restored to FP32; resuming trainer in RAM with FP16 autocast.")
     torch.cuda.reset_peak_memory_stats()
     train_started = time.perf_counter()
-    train_result = trainer.train()
+    # GRPO's rollout generation is outside Trainer's mixed-precision forward
+    # context. The E3 visual backbone is FP16 while its trainable projector is
+    # FP32; autocast must cover both rollout generation and policy updates.
+    with torch.autocast("cuda", dtype=torch.float16):
+        train_result = trainer.train()
     train_minutes = (time.perf_counter() - train_started) / 60.0
     peak_vram_gb = torch.cuda.max_memory_allocated(0) / (1024**3)
 
