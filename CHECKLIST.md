@@ -63,6 +63,8 @@ print("Sẽ khởi tạo E5 từ:", e3_checkpoint)
 
 5. Kiểm tra `data/splits/meta.json`, `data/splits/train.jsonl`, `data/splits/test.jsonl` đều tồn tại. Sau đó **chỉ chạy** cell `# E5: verifiable IoU reward...`. Cell này huấn luyện và chấm E5; bốn generation với Qwen3-VL-4B có thể vượt VRAM T4, nên theo dõi bộ nhớ và không coi evidence là hoàn tất trước khi có `report/evidence/e5.json`.
 
+Nếu E5 đã khởi tạo trainer nhưng dừng ngay bước đầu với `expected scalar type Half but found BFloat16`, **giữ nguyên runtime**. Bản notebook mới đã sửa dtype sau `GRPOTrainer(...)`. Với trainer cũ vẫn nằm trong RAM, lấy helper mới bằng `git pull --ff-only origin main`, rồi chạy `from e5_resume import resume_e5; e5_summary = resume_e5(globals())` trong một cell mới. Helper khôi phục tham số trainable về FP32, tiếp tục GRPO từ model đang ở RAM, lưu adapter/projector/log lên Drive và chấm E5. Chỉ dùng đường này khi `e5_trainer.state.global_step == 0`.
+
 Không chạy lại cell E0, các cell gọi `train_experiment("E1"/"E2"/"E3")`, cell `infer_and_score` riêng, hoặc cell E4 rank ablation. Nếu notebook mở trước khi GitHub cập nhật, thêm `from trl import GRPOConfig, GRPOTrainer` vào cell E5 hoặc mở lại bản mới từ GitHub; không restart runtime chỉ để lấy một dòng import.
 
 Sau mỗi lần chấm, sao lưu cả `report/evidence/*.json` và `work/*.jsonl` vào Drive hoặc tải về máy. Chỉ đưa evidence JSON và ảnh minh họa đã chọn lên GitHub; `work/`, `data/`, khóa và checkpoint phải ở ngoài Git. Khi đã có dữ liệu/prediction ở local, tạo sáu ảnh thật bằng:
