@@ -38,6 +38,33 @@ print("Nơi lưu checkpoint E4:", DRIVE_RUNS)
 
 Hàm `_resolve_run` tìm `run.json` và checkpoint ở `DRIVE_RUNS` nếu không còn bản local. Nếu runtime phải khởi động lại để làm E5, cần chuẩn bị lại `data/splits/test.jsonl`, ảnh test và các cell định nghĩa; không cần train lại E0–E4.
 
+### Phiên GPU mới: chỉ chạy E5
+
+Chạy từng cell theo thứ tự dưới đây, dựa vào dòng đầu của cell trong `lab_day10.ipynb`. Không dùng **Run all**.
+
+1. Cell `# Colab starts in /content; clone...` để khôi phục repo (bỏ qua cell `%cd` đứng trước nếu repo chưa tồn tại); tiếp theo là cell `# Runtime → Change runtime type → T4 GPU` để cài requirements, rồi cell `# Mount Drive...`.
+2. Cell `# Kaggle: dùng Colab Secrets...`, `!python scripts/prepare_data.py --kaggle`, rồi cell `# Verify the fixed session split...` để tái tạo `data/` sau khi runtime bị xóa.
+3. Chạy các cell **định nghĩa** bắt đầu bằng `# Convert YOLO labels...`, `# Encode one image...`, `# Freeze the base model...`, `# Train one of E1/E2/E3...`, `# Reload the base model...`. Cell train chỉ định nghĩa hàm; không tự gọi `train_experiment`.
+4. Chọn đúng Drive chứa checkpoint **E3** trước khi chạy E5:
+
+```python
+import json
+from pathlib import Path
+
+DRIVE_RUNS = Path("/content/drive/MyDrive/day10-vlm-new/runs")
+e3_meta = DRIVE_RUNS / "E3" / "run.json"
+assert e3_meta.is_file(), f"Không thấy checkpoint E3: {e3_meta}"
+e3_run = json.loads(e3_meta.read_text(encoding="utf-8"))
+e3_checkpoint = DRIVE_RUNS / "E3" / Path(e3_run["checkpoint"]).name
+assert (e3_checkpoint / "adapter").is_dir(), e3_checkpoint
+assert (e3_checkpoint / "projector.pt").is_file(), e3_checkpoint
+print("Sẽ khởi tạo E5 từ:", e3_checkpoint)
+```
+
+5. Kiểm tra `data/splits/meta.json`, `data/splits/train.jsonl`, `data/splits/test.jsonl` đều tồn tại. Sau đó **chỉ chạy** cell `# E5: verifiable IoU reward...`. Cell này huấn luyện và chấm E5; bốn generation với Qwen3-VL-4B có thể vượt VRAM T4, nên theo dõi bộ nhớ và không coi evidence là hoàn tất trước khi có `report/evidence/e5.json`.
+
+Không chạy lại cell E0, các cell gọi `train_experiment("E1"/"E2"/"E3")`, cell `infer_and_score` riêng, hoặc cell E4 rank ablation. Nếu notebook mở trước khi GitHub cập nhật, thêm `from trl import GRPOConfig, GRPOTrainer` vào cell E5 hoặc mở lại bản mới từ GitHub; không restart runtime chỉ để lấy một dòng import.
+
 Sau mỗi lần chấm, sao lưu cả `report/evidence/*.json` và `work/*.jsonl` vào Drive hoặc tải về máy. Chỉ đưa evidence JSON và ảnh minh họa đã chọn lên GitHub; `work/`, `data/`, khóa và checkpoint phải ở ngoài Git. Khi đã có dữ liệu/prediction ở local, tạo sáu ảnh thật bằng:
 
 ```powershell
